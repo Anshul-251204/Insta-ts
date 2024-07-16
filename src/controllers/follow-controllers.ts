@@ -13,13 +13,16 @@ const follow = asyncHandler(
             return next(new ApiError(400, "Id is required"));
         }
 
-        const follow = await Follow.findOne({ follow: id });
-
+        const follow = await Follow.findOne({
+            user: req.user?._id,
+            follower: id,
+        });
+        
         if (follow) {
             await Follow.findByIdAndDelete(follow._id);
-            res.status(Http.statusCode.Success).json(
-                new ApiResponse(null, "unfollowed")
-            );
+            return res
+                .status(Http.statusCode.Success)
+                .json(new ApiResponse(null, "unfollowed"));
         }
 
         if (!follow) {
@@ -35,4 +38,4 @@ const follow = asyncHandler(
     }
 );
 
-export default {follow};
+export default { follow };
