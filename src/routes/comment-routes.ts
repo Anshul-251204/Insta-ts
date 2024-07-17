@@ -1,6 +1,6 @@
 import { Router } from "express";
-import middlewares from "middlewares";
-import controllers from "controllers";
+import middlewares from "../middlewares";
+import controllers from "../controllers";
 const router = Router();
 
 router
@@ -16,3 +16,5 @@ router
         middlewares.authMiddleware,
         controllers.commentControllers.deleteCommentByid
     );
+
+export default router;

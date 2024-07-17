@@ -1,9 +1,10 @@
-import Http from "constants/statusCode-and-message";
 import { NextFunction, Request, Response } from "express";
-import Comment from "models/comment-model";
-import ApiError from "utils/api-error";
-import ApiResponse from "utils/api-response";
-import asyncHandler from "utils/async-handler";
+import Http from "../constants/statusCode-and-message";
+import Comment from "../models/comment-model";
+import ApiError from "../utils/api-error";
+import ApiResponse from "../utils/api-response";
+import asyncHandler from "../utils/async-handler";
+import mongoose from "mongoose";
 
 const addComment = asyncHandler(
     async (
@@ -14,7 +15,7 @@ const addComment = asyncHandler(
         const { content } = req.body;
         const { postId } = req.params;
 
-        if (!content || postId) {
+        if (!content || !postId) {
             return next(
                 new ApiError(Http.statusCode.BadRequest, "Content is requied !")
             );
@@ -48,8 +49,36 @@ const getAllcommentsOfPost = asyncHandler(
                 )
             );
         }
-
-        const comments = await Comment.find({ post: postId });
+        const comments = await Comment.aggregate([
+            {
+                $match: {
+                    post: new mongoose.Types.ObjectId(postId),
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "commentBy",
+                    foreignField: "_id",
+                    as: "avatar",// why ? avatar because it overwrite while adding fields
+                },
+            },
+            {
+                $addFields: {
+                    avatar: {
+                        $first: "$avatar.avatar",
+                    },
+                    userName: {
+                        $first: "$avatar.username",
+                    },
+                },
+            },
+            {
+                $sort: {
+                    createdAt: -1,
+                },
+            },
+        ]);
 
         res.status(Http.statusCode.Success).json(
             new ApiResponse(comments, "All comments of Post")

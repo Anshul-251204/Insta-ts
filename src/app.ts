@@ -25,6 +25,7 @@ app.use("/api/v1/auth", Router.authRouter);
 app.use("/api/v1/users", Router.userRouter);
 app.use("/api/v1/posts", Router.postRouter);
 app.use("/api/v1/follows", Router.followRouter);
+app.use("/api/v1/comments", Router.commentRouter);
 
 app.use(middlewares.errorHandler);
 export default app;
